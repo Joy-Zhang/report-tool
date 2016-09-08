@@ -2,7 +2,7 @@ var Sequelize = require('sequelize');
 var sequelize = new Sequelize('sqlite://../data/db.sqlite3');
 
 
-const Profile = sequelize.define('profile', {
+var Profile = sequelize.define('profile', {
   id: {
     type: Sequelize.String
   },
@@ -11,4 +11,4 @@ const Profile = sequelize.define('profile', {
   }
 });
 
-export {Profile};
+exports.Profile = Profile;

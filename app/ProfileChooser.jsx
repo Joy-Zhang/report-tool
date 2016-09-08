@@ -14,12 +14,19 @@ var style = {
 
 module.exports = react.createClass({
     getInitialState: function () {
-
+        return {
+            profiles: []
+        };
     },
     componentWillMount: function () {
         if(settings['profile']) {
             ipcRenderer.sendSync('profile', settings['profile']);
         }
+        db.Profile.all().then(function (profiles) {
+            this.setState({
+                profiles: profiles
+            });
+        });
     },
     componentDidMount: function () {
         ipcRenderer.send('sizing', this.refs.container.offsetHeight);
@@ -31,15 +38,14 @@ module.exports = react.createClass({
         ipcRenderer.send('profile', profile);
     },
     render: function () {
-        var a = [1,2,3];
         return (
             <div style={style} className="container-fluid" ref="container">
                 <div className="row">
                 {
-                    a.map(function(item, index) {
+                    this.profiles.map(function(profile, index) {
                         return (
                             <div key={index} className="col-xs-6">
-                                <ProfileButton onChoose={this.handleChoose} name="TLZ" mail="twoleft.zhang@outlook.com" />
+                                <ProfileButton onChoose={this.handleChoose} name={profile.id} mail={profile.mail} />
                             </div>
                         )
                     })

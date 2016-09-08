@@ -17,7 +17,8 @@ app.on('ready', () => {
         height: 200,
         useContentSize: true,
         center: true,
-        resizable: false
+        resizable: false,
+        autoHideMenuBar: true
     });
     profileChooser.webContents.openDevTools();
     profileChooser.loadURL(url.format({
@@ -31,6 +32,7 @@ app.on('ready', () => {
 ipcMain.on('profile', function (event, profile) {
     settings['profile'] = profile;
     profileChooser.hide();
+    console.log(profile);
 });
 ipcMain.on('sizing', function (event, size) {
     profileChooser.setContentSize(640, size);

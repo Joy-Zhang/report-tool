@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Profile选择器</title>
+        <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div id="react-app"></div>
+        <script>
+            require('node-jsx').install({extension: '.jsx'});
+            var React = require('react');
+            var ReactDOM = require('react-dom');
+            var ProfileChooser = require('../app/ProfileChooser.jsx');
+            ReactDOM.render(React.createElement(ProfileChooser), document.getElementById('react-app'));
+        </script>
+    </body>
+</html>

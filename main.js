@@ -1,32 +1,42 @@
-const {app, BrowserWindow} = require('electron');
+var electron = require('electron');
+var app = electron.app;
+var BrowserWindow = electron.BrowserWindow;
+var ipcMain = electron.ipcMain;
 
-const {Database} = require('sqlite3');
+var url = require('url');
+var path = require('path');
+
+var settings = require('./data/settings.json');
+
+var profileChooser;
+var reportTool;
 
 app.on('ready', () => {
-  createWindow();
+    profileChooser = new BrowserWindow({
+        width: 640,
+        height: 200,
+        useContentSize: true,
+        center: true,
+        resizable: false
+    });
+    profileChooser.webContents.openDevTools();
+    profileChooser.loadURL(url.format({
+      protocol: 'file',
+      slashes: true,
+      pathname: require('path').join(__dirname, 'window/profileChooser.html')
+    }));
+
 });
 
-app.on('quit', () => {
-
+ipcMain.on('profile', function (event, profile) {
+    settings['profile'] = profile;
+    profileChooser.hide();
+});
+ipcMain.on('sizing', function (event, size) {
+    profileChooser.setContentSize(640, size);
 });
 
 
-function createWindow () {
-  mainWindow = new BrowserWindow({});
-
-  mainWindow.loadURL('http://baidu.com');
-
-
-  mainWindow.on('closed', function () {
-    mainWindow = null;
-  });
-};
-
-
-app.on('window-all-closed', () => app.quit());
-
-app.on('activate', function () {
-  if (mainWindow === null) {
-    createWindow();
-  }
+app.on('window-all-closed', function () {
+    app.quit();
 });

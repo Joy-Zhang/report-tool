@@ -1,9 +1,13 @@
+var electron = require('electron');
+var ipcRenderer = electron.ipcRenderer;
+var remote = electron.remote;
+
 var react = require('react');
 var settings = require('../data/settings.json');
 
 var ProfileButton = require('./ProfileButton.jsx');
 var ProfileCreator = require('./ProfileCreator.jsx');
-var ipcRenderer = require('electron').ipcRenderer;
+
 var db = require('../model/db.js');
 
 
@@ -19,39 +23,41 @@ module.exports = react.createClass({
         };
     },
     componentWillMount: function () {
+        var self = this;
         if(settings['profile']) {
             ipcRenderer.sendSync('profile', settings['profile']);
         }
         db.Profile.all().then(function (profiles) {
-            this.setState({
+            self.setState({
                 profiles: profiles
             });
         });
     },
     componentDidMount: function () {
-        ipcRenderer.send('sizing', this.refs.container.offsetHeight);
+        remote.getCurrentWindow().setContentSize(640, this.refs.container.offsetHeight);
     },
     componentDidUpdate: function () {
-        ipcRenderer.send('sizing', this.refs.container.offsetHeight);
+        remote.getCurrentWindow().setContentSize(640, this.refs.container.offsetHeight);
     },
     handleChoose: function (profile) {
         ipcRenderer.send('profile', profile);
     },
     render: function () {
+        var self = this;
         return (
             <div style={style} className="container-fluid" ref="container">
                 <div className="row">
                 {
-                    this.profiles.map(function(profile, index) {
+                    self.state.profiles.map(function(profile, index) {
                         return (
-                            <div key={index} className="col-xs-6">
-                                <ProfileButton onChoose={this.handleChoose} name={profile.id} mail={profile.mail} />
+                            <div key={index} className="col-xs-12">
+                                <ProfileButton onChoose={self.handleChoose} name={profile.id} mail={profile.mail} />
                             </div>
                         )
                     })
                 }
                 </div>
-                <ProfileCreator onChoose={this.handleChoose} />
+                <ProfileCreator onChoose={self.handleChoose} />
             </div>
         );
     }

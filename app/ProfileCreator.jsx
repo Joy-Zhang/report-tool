@@ -1,4 +1,5 @@
 var react = require('react');
+var db = require('../model/db.js');
 
 module.exports = react.createClass({
     displayName: 'ProfileCreator',
@@ -9,9 +10,15 @@ module.exports = react.createClass({
         this[ref.name] = ref;
     },
     handleClick: function () {
-        this.props.onChoose({
-            name: this.name.value,
-            mail: this.mail.value
+        var self = this;
+        db.Profile.create({
+            id: self.name.value,
+            mail: self.mail.value
+        }).then(function () {
+            self.props.onChoose({
+                name: self.name.value,
+                mail: self.mail.value
+            });
         });
     },
     render: function () {

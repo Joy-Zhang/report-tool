@@ -1,6 +1,7 @@
 {
   "name": "report-tool",
   "version": "0.0.1",
+  "license": "MIT",
   "repository": "https://github.com/Joy-Zhang/report-tool.git",
   "main": "main.js",
   "dependencies": {
@@ -11,5 +12,8 @@
     "react-dom": "^15.3.1",
     "sequelize": "^3.24.1",
     "sqlite3": "^3.1.4"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.2.1"
   }
 }

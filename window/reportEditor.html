@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>写X报</title>
+        <title>X报编辑器</title>
         <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     </head>
     <body>
@@ -11,7 +11,7 @@
             require('node-jsx').install({extension: '.jsx'});
             var React = require('react');
             var ReactDOM = require('react-dom');
-            var app = require('../app/ReportTool.jsx');
+            var app = require('../app/ReportEditor.jsx');
             ReactDOM.render(React.createElement(app), document.getElementById('react-app'));
         </script>
     </body>

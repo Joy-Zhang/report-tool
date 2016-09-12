@@ -21,4 +21,32 @@ var Profile = sequelize.define('profile', {
     tableName: 'profile'
 });
 
+var Report = sequelize.define('profile', {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    author: {
+        type: Sequelize.TEXT
+    },
+    title: {
+        type: Sequelize.TEXT
+    },
+    template: {
+        type: Sequelize.TEXT
+    },
+    data: {
+        type: Sequelize.TEXT
+    },
+    timestamp: {
+        type: Sequelize.INTEGER,
+        defaultValue: (new Date()).getTime()
+    }
+}, {
+    timestamps: false,
+    tableName: 'report'
+});
+
 exports.Profile = Profile;
+exports.Report = Report;

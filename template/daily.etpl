@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+        <p>您好，</p>
+        <p>本人日报如下：</p>
+        <table>
+            <thead>
+                <tr><th>项目名称</th><th>工作进度</th><th>明天计划</th><th>问题描述</th></tr>
+            </thead>
+            <tbody>
+                <!-- for: ${data.content} as ${item}, ${index} -->
+                <tr><td>${item.project}</td><td>${item.progress}</td><td>${item.plan}</td><td>${item.problem}</td></tr>
+                <!-- /for -->
+            </tbody>
+        </table>
+        <p>${author}</p>
+    </body>
+</html>

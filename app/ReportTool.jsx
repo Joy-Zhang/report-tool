@@ -22,6 +22,11 @@ module.exports = react.createClass({
             content: 'report_editor'
         });
     },
+    handleCreateFinish: function () {
+        this.setState({
+            content: 'viewer'
+        });
+    },
     render: function () {
         var self = this;
         return (
@@ -38,7 +43,7 @@ module.exports = react.createClass({
                                 case 'viewer':
                                     return (<ReportViewer />);
                                 case 'report_editor':
-                                    return (<ReportEditor profile={self.state.profile} />);
+                                    return (<ReportEditor onFinish={self.handleCreateFinish}/>);
                                 default:
                                     return (<div>无内容组件</div>);
                             }

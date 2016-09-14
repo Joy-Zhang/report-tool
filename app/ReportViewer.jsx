@@ -6,6 +6,10 @@ var react = require('react');
 var db = require('../model/db.js');
 
 var etpl = require('etpl');
+var moment = require('moment');
+etpl.addFilter('dateFormat', function (source, format) {
+    return moment(parseInt(source)).format(format);
+});
 var path = require('path');
 
 var nodemailer = require('nodemailer');
@@ -41,7 +45,8 @@ module.exports = react.createClass({
         var render = etpl.loadFromFile(path.join(__dirname, '../template', report.template));
         var html = render({
             data: JSON.parse(report.data),
-            author: this.state.profile.id
+            author: this.state.profile.id,
+            now: (new Date()).getTime().toString()
         });
         return html;
     },

@@ -10,7 +10,9 @@ module.exports = react.createClass({
         };
     },
     handleRef: function (ref) {
-        this[ref.name] = ref;
+        if(ref !== null) {
+            this[ref.name] = ref;
+        }
     },
     handleClick: function () {
         this.props.onSend({

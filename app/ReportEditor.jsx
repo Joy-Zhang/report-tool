@@ -33,7 +33,7 @@ module.exports = react.createClass({
     },
     handleSave: function () {
         db.Report.create({
-            author: this.props.profile.name,
+            author: this.props.profile.id,
             title: this.title.value,
             template: this.template.value,
             data: this.data.value

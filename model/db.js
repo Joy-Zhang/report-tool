@@ -15,13 +15,29 @@ var Profile = sequelize.define('profile', {
     },
     mail: {
         type: Sequelize.TEXT
+    },
+    mail_user: {
+        type: Sequelize.TEXT,
+        allowNull: true
+    },
+    mail_pass: {
+        type: Sequelize.TEXT,
+        allowNull: true
+    },
+    smtp: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+            model: Smtp,
+            key: 'id'
+        }
     }
 }, {
     timestamps: false,
     tableName: 'profile'
 });
 
-var Report = sequelize.define('profile', {
+var Report = sequelize.define('report', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -48,5 +64,26 @@ var Report = sequelize.define('profile', {
     tableName: 'report'
 });
 
+var Smtp = sequelize.define('smtp', {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    host: {
+        type: Sequelize.TEXT
+    },
+    port: {
+        type: Sequelize.INTEGER
+    },
+    secure: {
+        type: Sequelize.INTEGER
+    }
+}, {
+    timestamps: false,
+    tableName: 'smtp'
+});
+
 exports.Profile = Profile;
 exports.Report = Report;
+exports.Smtp = Smtp;

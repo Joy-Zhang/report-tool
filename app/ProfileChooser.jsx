@@ -40,7 +40,7 @@ module.exports = react.createClass({
         remote.getCurrentWindow().setContentSize(640, this.refs.container.offsetHeight);
     },
     handleChoose: function (profile) {
-        ipcRenderer.send('profile', profile);
+        ipcRenderer.send('profile', JSON.parse(JSON.stringify(profile)));
     },
     render: function () {
         var self = this;
@@ -51,7 +51,7 @@ module.exports = react.createClass({
                     self.state.profiles.map(function(profile, index) {
                         return (
                             <div key={index} className="col-xs-12">
-                                <ProfileButton onChoose={self.handleChoose} name={profile.id} mail={profile.mail} />
+                                <ProfileButton onChoose={self.handleChoose} profile={profile} />
                             </div>
                         )
                     })

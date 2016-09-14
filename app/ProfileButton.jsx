@@ -7,17 +7,14 @@ var style = {
 module.exports = react.createClass({
     displayName: 'ProfileButton',
     handleClick: function () {
-        this.props.onChoose({
-            name: this.props.name,
-            mail: this.props.mail
-        });
+        this.props.onChoose(this.props.profile);
     },
     render: function () {
         return (
             <div style={style}>
                 <button onClick={this.handleClick} className="btn btn-default btn-block" type="button">
-                    <div>{this.props.name}</div>
-                    <div>{this.props.mail}</div>
+                    <div>{this.props.profile.id}</div>
+                    <div>{this.props.profile.mail}</div>
                 </button>
             </div>
         );

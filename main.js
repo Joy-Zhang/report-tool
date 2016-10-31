@@ -33,7 +33,7 @@ ipcMain.on('profile', function (event, profile) {
     reportTool = new BrowserWindow({
         center: true
     });
-
+    reportTool.maximize();
     reportTool.webContents.openDevTools();
     reportTool.loadURL(url.format({
         protocol: 'file',

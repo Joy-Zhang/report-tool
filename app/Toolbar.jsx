@@ -2,34 +2,19 @@ var electron = require('electron');
 var remote = electron.remote;
 
 var react = require('react');
+var Link = require('react-router').Link;
 
 module.exports = react.createClass({
-    getDefaultProps: function () {
-        return {
-            onCreate: function () {}
-        };
-    },
-    getInitialState: function () {
-        return {
-            profile: remote.getGlobal('settings')['profile']
-        }
-    },
-    componentWillMount: function () {
-
-    },
-    handleCreate: function () {
-        this.props.onCreate();
-    },
     render: function () {
         var self = this;
 
         return (
             <div className="btn-toolbar">
                 <div className="btn-group">
-                    <button onClick={self.handleCreate} className="btn btn-default">
-                        <div><span className="glyphicon glyphicon-plus"></span></div>
+                    <Link className="btn btn-default" to="/editor">
+                        <div><i className="fa fa-plus"></i></div>
                         <div>新建</div>
-                    </button>
+                    </Link>
                 </div>
             </div>
         );

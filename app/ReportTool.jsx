@@ -2,56 +2,47 @@ var electron = require('electron');
 var remote = electron.remote;
 
 var react = require('react');
+var reactRouter = require('react-router');
+var Router = reactRouter.Router;
+var Route = reactRouter.Route;
+var IndexRoute = reactRouter.IndexRoute;
+var history = reactRouter.hashHistory;
 
 var Toolbar = require('./Toolbar.jsx');
 var ReportEditor = require('./ReportEditor.jsx');
 var ReportViewer = require('./ReportViewer.jsx');
 
-module.exports = react.createClass({
-    getInitialState: function () {
-        return {
-            profile: remote.getGlobal('settings')['profile'],
-            content: 'viewer'
-        }
-    },
-    componentWillMount: function () {
-
-    },
-    handleCreate: function () {
-        this.setState({
-            content: 'report_editor'
-        });
-    },
-    handleCreateFinish: function () {
-        this.setState({
-            content: 'viewer'
-        });
-    },
+var Frame = react.createClass({
     render: function () {
         var self = this;
         return (
             <div className="conatiner-fluid" style={{padding: '20px'}}>
                 <div className="row">
                     <div className="col-xs-12">
-                        <Toolbar onCreate={self.handleCreate} />
+                        <Toolbar />
                     </div>
                 </div>
                 <div className="row" style={{margin: '20px'}}>
-                    {
-                        (function(content) {
-                            switch (content) {
-                                case 'viewer':
-                                    return (<ReportViewer />);
-                                case 'report_editor':
-                                    return (<ReportEditor onFinish={self.handleCreateFinish}/>);
-                                default:
-                                    return (<div>无内容组件</div>);
-                            }
-                        })(this.state.content)
-                    }
+                    {self.props.children}
                 </div>
             </div>
         );
     }
 });
 
+var ReportTool = function () {
+    return (
+        <Router history={history}>
+            <Route path="/" component={Frame}>
+                <IndexRoute component={ReportViewer}/>
+                <Route path="viewer" component={ReportViewer} />
+                <Route path="editor(/:id)" component={ReportEditor} />
+                <Route path="editor(/:id/:mode)" component={ReportEditor} />
+            </Route>
+        </Router>
+    );
+
+}
+
+
+module.exports = ReportTool;

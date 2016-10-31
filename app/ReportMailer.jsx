@@ -14,8 +14,8 @@ module.exports = react.createClass({
             this[ref.name] = ref;
         }
     },
-    handleClick: function () {
-        this.props.onSend({
+    handleClick: function (e) {
+        this.props.onSend(e, {
             to: this.to.value,
             cc: this.cc.value
         });
@@ -26,9 +26,11 @@ module.exports = react.createClass({
         return (
             <div className="form-inline">
                 <div className="form-group">
+                    <label className="sr-only" htmlFor="to">TO</label>
                     <input ref={self.handleRef} className="form-control" name="to" placeholder="收件人" />
                 </div>
                 <div className="form-group">
+                    <label className="sr-only" htmlFor="cc">CC</label>
                     <input ref={self.handleRef} className="form-control" name="cc" placeholder="抄送" />
                 </div>
                 <button onClick={self.handleClick} className="btn btn-default">发送</button>

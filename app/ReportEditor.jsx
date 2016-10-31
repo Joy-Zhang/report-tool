@@ -5,11 +5,14 @@ var fs = require('fs');
 var path = require('path');
 
 var react = require('react');
+var Link = require('react-router').Link;
 
 var db = require('../model/db.js');
 
 var etpl = require('etpl');
 var moment = require('moment');
+var domino = require('domino');
+
 etpl.addFilter('dateFormat', function (source, format) {
     return moment(parseInt(source)).format(format);
 });
@@ -21,69 +24,119 @@ var style = {
 };
 
 module.exports = react.createClass({
-    getDefaultProps: function () {
-        return {
-            onFinish: function () {}
-        }
+    id: 0,
+    mode: 'edit',
+    profile: remote.getGlobal('settings')['profile'],
+    initializeTemplates: function() {
+        var self = this;
+        return new Promise(function(resolve, reject) {
+            fs.readdir(path.join(__dirname, '../template'), function (err, files) {
+                self.setState({
+                    templates: files,
+                });
+                resolve(files);
+            });
+        });
     },
     getInitialState: function () {
         return {
-            profile: remote.getGlobal('settings')['profile'],
             templates: [],
-            title: []
-        }
+            template: '',
+            title: '',
+            data: ''
+        };
     },
     componentWillMount: function () {
         var self = this;
-        fs.readdir(path.join(__dirname, '../template'), function (err, files) {
-            self.setState({
-                templates: files,
-            });
-            self.analyzeTemplate(files[0]);
-        })
-    },
-    handleRef: function (ref) {
-        if(ref !== null) {
-            this[ref.name] = ref;
-        }
-    },
-    handleSave: function () {
-        var self = this;
-        db.Report.create({
-            author: this.state.profile.id,
-            title: this.state.title.join(''),
-            template: this.template.value,
-            data: this.data.value
-        }).then(function () {
-            remote.dialog.showMessageBox({
-                type: 'info',
-                title: '成功',
-                message: '保存成功',
-                buttons: []
-            });
-            self.props.onFinish();
 
+        if(self.props.params.mode) {
+            self.mode = self.props.params.mode;
+        }
+
+        self.id = parseInt(self.props.params.id);
+
+        self.initializeTemplates().then(function (files) {
+            if(!Number.isNaN(self.id)) {
+                db.Report.findById(self.id).then(function (report) {
+                    if(report) {
+                        if(self.mode === 'duplicate') {
+                            self.setState({
+                                data: report.data
+                            });
+                            self.analyzeTemplate(report.template);
+                        } else {
+                            self.setState({
+                                data: report.data,
+                                template: report.template,
+                                title: report.title
+                            });
+                        }
+                    } else {
+                        self.analyzeTemplate(files[0]);
+                    }
+                });
+            } else {
+                self.analyzeTemplate(files[0]);
+            }
         });
+    },
+    onSave: function (e) {
+        var self = this;
+        if(self.mode === 'duplicate' || Number.isNaN(self.id)) {
+            db.Report.create({
+                author: self.profile.id,
+                title: self.state.title,
+                template: self.state.template,
+                data: self.state.data
+            }).then(function () {
+                remote.dialog.showMessageBox({
+                    type: 'info',
+                    title: '成功',
+                    message: '保存成功',
+                    buttons: []
+                });
+            });
+        } else {
+            db.Report.update({
+                author: self.profile.id,
+                title: self.state.title.join(''),
+                template: self.state.template,
+                data: self.state.data
+            }, {
+                where: {
+                    id: self.id
+                }
+            }).then(function () {
+                remote.dialog.showMessageBox({
+                    type: 'info',
+                    title: '成功',
+                    message: '保存成功',
+                    buttons: []
+                });
+            });
+        }
     },
     analyzeTemplate: function (template) {
         var self = this;
         fs.readFile(path.join(__dirname, '../template', template), function (err, data) {
-            var match = /<title>(.*?)<\/title>/.exec(data);
-            var title = match[1];
-            var match = /\$\{data\.(.+?)\}/.exec(title);
-            if(match) {
+            var tplWindow = domino.createWindow(data);
 
-            } else {
-
-                self.setState({title: [etpl.compile(title)({
-                    now: (new Date()).getTime().toString()
-                })]})
-            }
+            var titleTpl = tplWindow.document.querySelector('title').innerHTML;
+            var title = etpl.compile(titleTpl)({
+                now: (new Date()).getTime().toString()
+            });
+            self.setState({title: title, template: template});
         });
     },
-    changeTemplate: function (event) {
+    onTemplateChange: function (event) {
         var self = this;
         self.analyzeTemplate(event.target.value);
+    },
+    onChange: function (e) {
+        var self = this;
+        var state = {};
+        state[e.target.name] = e.target.value;
+        self.setState(state);
     },
     render: function () {
         var self = this;
@@ -93,7 +146,7 @@ module.exports = react.createClass({
                 <div className="row" style={style.row}>
                     <div className="col-xs-3">模板</div>
                     <div className="col-xs-6">
-                        <select className="form-control" name="template" ref={self.handleRef} onChange={self.changeTemplate}>
+                        <select className="form-control" name="template" value={self.state.template} onChange={self.onTemplateChange}>
                             {
                                 this.state.templates.map(function (template) {
                                     return (<option key={template} value={template}>{template}</option>);
@@ -105,23 +158,34 @@ module.exports = react.createClass({
                 <div className="row" style={style.row}>
                     <div className="col-xs-3">标题</div>
                     <div className="col-xs-6">
-                        {
-                            self.state.title.map(function (part) {
-                                return part;
-                            })
-                        }
+                        <input className="form-control" name="title" value={self.state.title} onChange={self.onChange} />
                     </div>
                 </div>
                 <div className="row" style={style.row}>
                     <div className="col-xs-3">数据</div>
-                    <div className="col-xs-6"><textarea className="form-control" name="data" ref={self.handleRef}></textarea></div>
+                    <div className="col-xs-6">
+                        <textarea className="form-control" rows="20" name="data" value={self.state.data} onChange={self.onChange}></textarea>
+                    </div>
+                    <div className="col-xs-3">
+                        <pre style={{maxHeight: '420px'}}>
+                            {
+                                (function () {
+                                    try {
+                                        return JSON.stringify(JSON.parse(self.state.data), undefined, 2);
+                                    } catch (e) {
+                                        return e.message;
+                                    }
+                                })()
+                            }
+                        </pre>
+                    </div>
                 </div>
                 <div className="row" style={style.row}>
                     <div className="col-xs-2 col-xs-offset-3">
-                        <button className="btn btn-primary btn-block" type="button" onClick={self.handleSave}>保存</button>
+                        <Link to="/viewer" className="btn btn-primary btn-block" type="button" onClick={self.onSave}>保存</Link>
                     </div>
                     <div className="col-xs-2">
-                        <button className="btn btn-default btn-block" type="button" onClick={self.props.onFinish}>取消</button>
+                        <Link to="/viewer" className="btn btn-default btn-block" type="button">取消</Link>
                     </div>
                 </div>
             </div>

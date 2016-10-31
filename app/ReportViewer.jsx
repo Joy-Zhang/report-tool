@@ -2,6 +2,7 @@ var electron = require('electron');
 var remote = electron.remote;
 
 var react = require('react');
+var Link = require('react-router').Link;
 
 var db = require('../model/db.js');
 
@@ -83,7 +84,7 @@ module.exports = react.createClass({
             content: self.renderReport(report)
         });
     },
-    handleSend: function (mail) {
+    handleSend: function (e, mail) {
         var self = this;
         db.Smtp.findById(self.state.profile.smtp).then(function(smtp) {
             var transporter = nodemailer.createTransport({
@@ -98,6 +99,7 @@ module.exports = react.createClass({
                 from: '"' + self.state.profile.id + '" <' + self.state.profile.mail + '>',
                 to: mail.to,
                 cc: mail.cc,
+                bcc: self.state.profile.mail,
                 subject: self.state.title,
                 html: self.state.content
             }, function (err, info) {
@@ -138,7 +140,18 @@ module.exports = react.createClass({
                     </div>
                     <div className="col-xs-9">
                         <div className="panel panel-default">
-                            <div className="panel-body" >
+                            <div className="panel-heading" >
+                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport}>
+                                    <i className="fa fa-pencil-square-o"></i>
+                                </Link>
+                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport + '/duplicate'}>
+                                    <i className="fa fa-files-o"></i>
+                                </Link>
+                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport}>
+                                    <i className="fa fa-envelope-o"></i>
+                                </Link>
+                            </div>
+                            <div className="panel-heading" >
                                 <ReportMailer onSend={self.handleSend} />
                             </div>
                             <div className="panel-body" >

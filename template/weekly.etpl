@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>[个人工作周报]${now|dateFormat("YYYYMMDD")}</title>
+    </head>
+    <body>
+        <p>您好，</p>
+        <p>本人本周工作周报如下：</p>
+        <table style="border-spacing: 0; border-collapse: collapse; word-break: normal;">
+            <thead>
+                <tr style="font-size: 20px; line-height: 24px;">
+                    <th style="border: solid 1px #000; padding: 4px;">项目</th>
+                    <th style="border: solid 1px #000; padding: 4px;">本周进展</th>
+                    <th style="border: solid 1px #000; padding: 4px;">下周计划</th>
+                    <th style="border: solid 1px #000; padding: 4px;">负责人</th>
+                    <th style="border: solid 1px #000; padding: 4px;">项目进度</th>
+                    <th style="border: solid 1px #000; padding: 4px;">项目状态</th>
+                    <th style="border: solid 1px #000; padding: 4px;">预计上线日期</th>
+                    <th style="border: solid 1px #000; padding: 4px;">问题描述</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- for: ${data.content} as ${item}, ${index} -->
+                <tr style="font-size: 16px; line-height: 20px;">
+                    <td style="border: solid 1px #000; padding: 4px;">${item.project}</td>
+                    <td style="border: solid 1px #000; padding: 4px;">${item.did}</td>
+                    <td style="border: solid 1px #000; padding: 4px;">${item.plan}</td>
+                    <td style="border: solid 1px #000; padding: 4px;">${item.pm}</td>
+                    <td style="border: solid 1px #000; padding: 4px;">${item.progress}</td>
+                    <td style="border: solid 1px #000; padding: 4px;">${item.status}</td>
+                    <td style="border: solid 1px #000; padding: 4px;">${item.online}</td>
+                    <td style="border: solid 1px #000; padding: 4px;">${item.problem}</td>
+                </tr>
+                <!-- /for -->
+            </tbody>
+        </table>
+        <p>${author}</p>
+    </body>
+</html>

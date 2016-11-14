@@ -6,11 +6,12 @@ var ipcMain = electron.ipcMain;
 var url = require('url');
 var path = require('path');
 
-global['settings'] = require('./data/settings.json');
+//global['settings'] = require('./data/settings.json');
 
 var profileChooser;
 var reportTool;
 
+/*
 app.on('ready', () => {
     profileChooser = new BrowserWindow({
         width: 640,
@@ -43,7 +44,20 @@ ipcMain.on('profile', function (event, profile) {
 
     profileChooser.close();
 });
+*/
 
+app.on('ready', function () {
+    reportTool = new BrowserWindow({
+        center: true
+    });
+    reportTool.maximize();
+    reportTool.webContents.openDevTools();
+    reportTool.loadURL(url.format({
+        protocol: 'file',
+        slashes: true,
+        pathname: path.join(__dirname, 'window/reportTool.html')
+    }));
+});
 app.on('window-all-closed', function () {
     app.quit();
 });

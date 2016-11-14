@@ -35,7 +35,7 @@ var ReportItemButton = react.createClass({
 module.exports = react.createClass({
     getInitialState: function () {
         return {
-            profile: remote.getGlobal('settings')['profile'],
+            profile: JSON.parse(sessionStorage['profile']),
             reports: [{id: 0, title: 'Initializing...'}],
             currentReport: 0,
             title: 'Initializing...',

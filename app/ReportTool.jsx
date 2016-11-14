@@ -7,7 +7,9 @@ var Router = reactRouter.Router;
 var Route = reactRouter.Route;
 var IndexRoute = reactRouter.IndexRoute;
 var history = reactRouter.hashHistory;
+var IndexRedirect = reactRouter.IndexRedirect;
 
+var Profile = require('./Profile.jsx');
 var Toolbar = require('./Toolbar.jsx');
 var ReportEditor = require('./ReportEditor.jsx');
 var ReportViewer = require('./ReportViewer.jsx');
@@ -33,8 +35,9 @@ var Frame = react.createClass({
 var ReportTool = function () {
     return (
         <Router history={history}>
+            <Route path="/profile" component={Profile} />
             <Route path="/" component={Frame}>
-                <IndexRoute component={ReportViewer}/>
+                <IndexRedirect to="/profile" />
                 <Route path="viewer" component={ReportViewer} />
                 <Route path="editor(/:id)" component={ReportEditor} />
                 <Route path="editor(/:id/:mode)" component={ReportEditor} />

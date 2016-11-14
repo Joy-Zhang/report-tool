@@ -26,7 +26,7 @@ var style = {
 module.exports = react.createClass({
     id: 0,
     mode: 'edit',
-    profile: remote.getGlobal('settings')['profile'],
+    profile: null,
     initializeTemplates: function() {
         var self = this;
         return new Promise(function(resolve, reject) {
@@ -48,7 +48,7 @@ module.exports = react.createClass({
     },
     componentWillMount: function () {
         var self = this;
-
+        self.profile = JSON.parse(sessionStorage['profile']);
         if(self.props.params.mode) {
             self.mode = self.props.params.mode;
         }
@@ -99,7 +99,7 @@ module.exports = react.createClass({
         } else {
             db.Report.update({
                 author: self.profile.id,
-                title: self.state.title.join(''),
+                title: self.state.title,
                 template: self.state.template,
                 data: self.state.data
             }, {

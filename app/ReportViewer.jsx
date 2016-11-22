@@ -24,11 +24,43 @@ var ReportItemButton = react.createClass({
         }
     },
     handleClick: function () {
-        this.props.onSelect(this.props.report);
+        this.props.onSelect(this.props.report, this.props.index);
     },
     render: function () {
         var self = this;
         return (<button onClick={self.handleClick} className={'list-group-item' + (this.props.active ? ' active' : '')}>{self.props.report.title}</button>);
+    }
+});
+
+var ReportItemList = react.createClass({
+    getInitialState: function () {
+        return {
+            current: 0,
+            offset: 0
+        };
+    },
+    getDefaultProps: function () {
+        return {
+            pageSize: 6
+        };
+    },
+    onSelect: function (report, index) {
+        this.props.onSelect(report);
+        this.setState({current: index});
+    },
+    render: function () {
+        var self = this;
+        return (
+            <div className="list-group">
+                {
+                    self.props.reports.filter(function (item, index) {
+                        return index >= self.state.offset && index < self.props.pageSize + self.state.offset;
+                    }).map(function (report, index) {
+                        return (<ReportItemButton key={report.id} index={index} active={self.state.current === index} onSelect={self.onSelect} report={report} />);
+                    })
+                }
+            </div>
+        );
     }
 });
 
@@ -37,9 +69,7 @@ module.exports = react.createClass({
         return {
             profile: JSON.parse(sessionStorage['profile']),
             reports: [{id: 0, title: 'Initializing...'}],
-            currentReport: 0,
-            title: 'Initializing...',
-            content: '<html><body>Initializing...</body></html>'
+            currentReport: {id: 0, title: 'Initializing...', content: '<html><body>Initializing...</body></html>'}
         }
     },
     renderReport: function(report) {
@@ -63,8 +93,7 @@ module.exports = react.createClass({
         }).then(function(reports) {
             self.setState({
                 reports: reports,
-                currentReport: reports[0].id,
-                title: reports[0].title,
+                currentReport: reports[0],
                 content: self.renderReport(reports[0])
             });
         });
@@ -76,17 +105,16 @@ module.exports = react.createClass({
             self.refs.preview.style.height = height + 'px';
         }
     },
-    handleSelect: function (report) {
+    onReportSelect: function (report) {
         var self = this;
         self.setState({
-            currentReport: report.id,
-            title: report.title,
+            currentReport: report,
             content: self.renderReport(report)
         });
     },
-    handleSend: function (e, mail) {
+    onMailSend: function (e) {
         var self = this;
-        db.Smtp.findById(self.state.profile.smtp).then(function(smtp) {
+        db.Smtp.findById(self.state.profile.smtp).then(function (smtp) {
             var transporter = nodemailer.createTransport({
                 host: smtp.host,
                 port: smtp.port,
@@ -97,11 +125,9 @@ module.exports = react.createClass({
             });
             transporter.sendMail({
                 from: '"' + self.state.profile.id + '" <' + self.state.profile.mail + '>',
-                to: mail.to,
-                cc: mail.cc,
-                bcc: self.state.profile.mail,
-                subject: self.state.title,
-                html: self.state.content
+                to: self.state.profile.mail,
+                subject: self.state.currentReport.title,
+                html: self.state.currentReport.content
             }, function (err, info) {
                 if(err) {
                     remote.dialog.showMessageBox({
@@ -130,29 +156,20 @@ module.exports = react.createClass({
             <div className="conatiner-fluid">
                 <div className="row">
                     <div className="col-xs-3">
-                        <div className="list-group">
-                            {
-                                self.state.reports.map(function (report) {
-                                    return (<ReportItemButton key={report.id} active={self.state.currentReport === report.id} onSelect={self.handleSelect} report={report} />);
-                                })
-                            }
-                        </div>
+                        <ReportItemList active={self.state.currentReport} reports={self.state.reports} onSelect={self.onReportSelect} />
                     </div>
                     <div className="col-xs-9">
                         <div className="panel panel-default">
                             <div className="panel-heading" >
-                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport}>
+                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport.id}>
                                     <i className="fa fa-pencil-square-o"></i>
                                 </Link>
-                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport + '/duplicate'}>
+                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport.id + '/duplicate'}>
                                     <i className="fa fa-files-o"></i>
                                 </Link>
-                                <Link className="btn btn-default" to={'/editor/' + self.state.currentReport}>
+                                <button className="btn btn-default" onClick={self.onMailSend}>
                                     <i className="fa fa-envelope-o"></i>
-                                </Link>
-                            </div>
-                            <div className="panel-heading" >
-                                <ReportMailer onSend={self.handleSend} />
+                                </button>
                             </div>
                             <div className="panel-body" >
                                 <iframe ref="preview" name="preview" style={{width: '100%', border: 'none'}} src={'data:text/html;charset=utf-8,' + encodeURIComponent(self.state.content)}></iframe>

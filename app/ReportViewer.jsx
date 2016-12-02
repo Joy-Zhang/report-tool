@@ -15,8 +15,6 @@ var path = require('path');
 
 var nodemailer = require('nodemailer');
 
-var ReportMailer = require('./ReportMailer.jsx');
-
 var ReportItemButton = react.createClass({
     getDefaultProps: function () {
         return {
@@ -28,7 +26,11 @@ var ReportItemButton = react.createClass({
     },
     render: function () {
         var self = this;
-        return (<button onClick={self.handleClick} className={'list-group-item' + (this.props.active ? ' active' : '')}>{self.props.report.title}</button>);
+        return (
+            <button onClick={self.handleClick} className={'list-group-item' + (this.props.active ? ' active' : '')}>
+                {self.props.report.title}
+            </button>
+        );
     }
 });
 
@@ -48,17 +50,38 @@ var ReportItemList = react.createClass({
         this.props.onSelect(report);
         this.setState({current: index});
     },
+    onPrev: function () {
+        this.setState({offset: this.state.offset - 1});
+    },
+    onNext: function () {
+        this.setState({offset: this.state.offset + 1});
+    },
     render: function () {
         var self = this;
+        var hasNext = self.state.offset + self.props.pageSize < self.props.reports.length;
+        var hasPrev = self.state.offset > 0;
+
         return (
             <div className="list-group">
+                <button className={'list-group-item' + (hasPrev ? '' : ' disabled')} style={{textAlign: 'center'}}
+                    disabled={!hasPrev} onClick={self.onPrev}>
+                    <i className="fa fa-chevron-up"></i>
+                </button>
                 {
                     self.props.reports.filter(function (item, index) {
                         return index >= self.state.offset && index < self.props.pageSize + self.state.offset;
                     }).map(function (report, index) {
-                        return (<ReportItemButton key={report.id} index={index} active={self.state.current === index} onSelect={self.onSelect} report={report} />);
+                        return (
+                            <ReportItemButton key={report.id} index={index + self.state.offset}
+                                active={self.state.current === index + self.state.offset}
+                                onSelect={self.onSelect} report={report} />
+                        );
                     })
                 }
+                <button className={'list-group-item' + (hasNext ? '' : ' disabled')} style={{textAlign: 'center'}}
+                    disabled={!hasNext} onClick={self.onNext}>
+                    <i className="fa fa-chevron-down"></i>
+                </button>
             </div>
         );
     }
@@ -72,7 +95,7 @@ module.exports = react.createClass({
             currentReport: {id: 0, title: 'Initializing...', content: '<html><body>Initializing...</body></html>'}
         }
     },
-    renderReport: function(report) {
+    renderReport: function (report) {
         var render = etpl.loadFromFile(path.join(__dirname, '../template', report.template));
         var html = render({
             data: JSON.parse(report.data),
@@ -81,7 +104,7 @@ module.exports = react.createClass({
         });
         return html;
     },
-    componentWillMount: function () {
+    loadData: function () {
         var self = this;
         db.Report.all({
             where: {
@@ -98,8 +121,10 @@ module.exports = react.createClass({
             });
         });
     },
+    componentWillMount: function () {},
     componentDidMount: function () {
         var self = this;
+        self.loadData();
         self.refs.preview.onload = function () {
             var height = window.frames['preview'].document.body.parentElement.offsetHeight;
             self.refs.preview.style.height = height + 'px';
@@ -112,7 +137,7 @@ module.exports = react.createClass({
             content: self.renderReport(report)
         });
     },
-    onMailSend: function (e) {
+    onMail: function (e) {
         var self = this;
         db.Smtp.findById(self.state.profile.smtp).then(function (smtp) {
             var transporter = nodemailer.createTransport({
@@ -127,7 +152,7 @@ module.exports = react.createClass({
                 from: '"' + self.state.profile.id + '" <' + self.state.profile.mail + '>',
                 to: self.state.profile.mail,
                 subject: self.state.currentReport.title,
-                html: self.state.currentReport.content
+                html: self.renderReport(self.state.currentReport)
             }, function (err, info) {
                 if(err) {
                     remote.dialog.showMessageBox({
@@ -147,7 +172,20 @@ module.exports = react.createClass({
             });
 
         });
-
+    },
+    onDelete: function () {
+        var self = this;
+        var result = remote.dialog.showMessageBox({
+            title: '确认删除',
+            message: '亲，确认要删除么？',
+            type: 'question',
+            buttons: ['确认', '取消']
+        });
+        if(result === 0) {
+            db.Report.destroy({
+                where: {id: self.state.currentReport.id}
+            });
+        }
     },
     render: function () {
         var self = this;
@@ -156,7 +194,8 @@ module.exports = react.createClass({
             <div className="conatiner-fluid">
                 <div className="row">
                     <div className="col-xs-3">
-                        <ReportItemList active={self.state.currentReport} reports={self.state.reports} onSelect={self.onReportSelect} />
+                        <ReportItemList active={self.state.currentReport} reports={self.state.reports} pageSize={8}
+                            onSelect={self.onReportSelect} />
                     </div>
                     <div className="col-xs-9">
                         <div className="panel panel-default">
@@ -167,12 +206,17 @@ module.exports = react.createClass({
                                 <Link className="btn btn-default" to={'/editor/' + self.state.currentReport.id + '/duplicate'}>
                                     <i className="fa fa-files-o"></i>
                                 </Link>
-                                <button className="btn btn-default" onClick={self.onMailSend}>
+                                <button className="btn btn-default" onClick={self.onMail}>
                                     <i className="fa fa-envelope-o"></i>
+                                </button>
+                                <button className="btn btn-danger" onClick={self.onDelete}>
+                                    <i className="fa fa-trash-o"></i>
                                 </button>
                             </div>
                             <div className="panel-body" >
-                                <iframe ref="preview" name="preview" style={{width: '100%', border: 'none'}} src={'data:text/html;charset=utf-8,' + encodeURIComponent(self.state.content)}></iframe>
+                                <iframe ref="preview" name="preview" style={{width: '100%', border: 'none'}}
+                                    src={'data:text/html;charset=utf-8,' + encodeURIComponent(self.state.content)}>
+                                </iframe>
                             </div>
                         </div>
                     </div>
